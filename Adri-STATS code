@@ -1,0 +1,47 @@
+#STATS final project
+# Load ARFF file
+bone_marrow_data <- read.arff("bone-marrow.arff")
+
+# View the first few rows of the dataset
+head(bone_marrow_data)
+
+# Summary of the dataset
+summary(bone_marrow_data)
+
+# Structure of the dataset
+str(bone_marrow_data)
+
+# Basic correlation matrix for numeric variables
+correlations <- cor(bone_marrow_data[, sapply(bone_marrow_data, is.numeric)])
+print(correlations)
+
+# Plotting
+pairs(bone_marrow_data[, 1:4])  # Adjust indices according to your specific needs
+
+# Ensure the survival package is installed
+if (!require(survival)) {
+  install.packages("survival")
+  library(survival)
+}
+
+# Create the survival object from the survival time and status
+surv_obj <- Surv(time = bone_marrow_data$survival_time, event = bone_marrow_data$survival_status)
+
+# Fit the Cox proportional hazards model including CD34+ dosage and control variables
+cox_model <- coxph(surv_obj ~ CD34kgx10d6 + Recipientageint + Disease + Riskgroup + HLAmatch + aGvHDIIIIV + extcGvHD, data = bone_marrow_data)
+summary(cox_model)
+
+# Ensure the survival package is installed
+if (!require(survival)) {
+  install.packages("survival")
+  library(survival)
+}
+
+# Creating a survival object
+surv_obj <- Surv(time = bone_marrow_data$survival_time, event = bone_marrow_data$survival_status)
+
+# Fit Kaplan-Meier survival curve
+km_fit <- survfit(surv_obj ~ 1)  # '~1' indicates overall survival curve without stratification
+
+# Plot the Kaplan-Meier survival curve
+plot(km_fit, main = "Kaplan-Meier Survival Curve", xlab = "Time (days)", ylab = "Survival probability")
